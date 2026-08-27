@@ -1,0 +1,15 @@
+# compiled binary
+/ghost
+*.exe
+
+# go test artifacts
+*.test
+*.out
+
+# editor / os
+.DS_Store
+.idea/
+.vscode/
+
+# claude code
+.claude/

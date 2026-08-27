@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Index of {{.Path}}</title>
+    <style>
+        ul { list-style: none; padding-left: 0; }
+        li { display: flex; align-items: center; gap: .4em; }
+        svg { flex: none; }
+    </style>
+</head>
+<body>
+    <h1>Index of {{.Path}}</h1>
+    <ul>
+        {{if ne .Path "/"}}<li>{{$.ParentIcon}} <a href="../">Parent directory</a></li>{{end}}
+        {{range .Entries}}<li>{{.Icon}} <a href="{{.URL}}">{{.Name}}</a></li>
+        {{end}}
+    </ul>
+</body>
+</html>
