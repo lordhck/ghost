@@ -31,6 +31,11 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	upath := path.Clean("/" + r.URL.Path)
 	full := filepath.Join(s.dir, filepath.FromSlash(upath))
 
+	if isHidden(upath) {
+		s.notFound(w, upath)
+		return
+	}
+
 	info, err := os.Stat(full)
 	if err != nil {
 		s.notFound(w, upath)
@@ -57,6 +62,17 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, index)
 }
 
+// isHidden reports whether any component of upath is a dotfile, so that
+// /.env is refused and not just omitted from the listing.
+func isHidden(upath string) bool {
+	for _, part := range strings.Split(upath, "/") {
+		if strings.HasPrefix(part, ".") {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *server) listDir(w http.ResponseWriter, upath, full string) {
 	names, err := os.ReadDir(full)
 	if err != nil {
@@ -66,6 +82,10 @@ func (s *server) listDir(w http.ResponseWriter, upath, full string) {
 
 	entries := make([]entry, 0, len(names))
 	for _, de := range names {
+		if strings.HasPrefix(de.Name(), ".") {
+			continue
+		}
+
 		link := url.URL{Path: de.Name()}
 		e := entry{Name: de.Name(), URL: link.String(), Icon: iconFor(de)}
 		if de.IsDir() {
