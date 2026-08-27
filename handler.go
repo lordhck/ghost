@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -10,57 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 )
-
-//go:embed src/html/*.html
-var htmlFS embed.FS
-
-//go:embed src/icons/*.svg
-var iconFS embed.FS
-
-var (
-	indexTmpl    = template.Must(template.ParseFS(htmlFS, "src/html/indexof.html"))
-	notFoundTmpl = template.Must(template.ParseFS(htmlFS, "src/html/notfound.html"))
-)
-
-var (
-	iconFolder = mustIcon("folder-icon.svg")
-	iconParent = mustIcon("arrow-return.svg")
-	iconDoc    = mustIcon("docs-file.svg")
-	iconZip    = mustIcon("folder-zip.svg")
-	iconAudio  = mustIcon("audio-file.svg")
-	iconVideo  = mustIcon("video-file.svg")
-)
-
-var iconByExt = map[string]template.HTML{
-	".zip": iconZip, ".tar": iconZip, ".gz": iconZip, ".tgz": iconZip,
-	".bz2": iconZip, ".xz": iconZip, ".rar": iconZip, ".7z": iconZip,
-
-	".mp3": iconAudio, ".wav": iconAudio, ".flac": iconAudio,
-	".ogg": iconAudio, ".m4a": iconAudio, ".aac": iconAudio, ".opus": iconAudio,
-
-	".mp4": iconVideo, ".mkv": iconVideo, ".webm": iconVideo,
-	".mov": iconVideo, ".avi": iconVideo, ".m4v": iconVideo,
-}
-
-// template.HTML skips escaping, which is safe only because these are our own
-// embedded files and never anything from the served directory.
-func mustIcon(name string) template.HTML {
-	b, err := iconFS.ReadFile("src/icons/" + name)
-	if err != nil {
-		panic(err)
-	}
-	return template.HTML(b)
-}
-
-func iconFor(de os.DirEntry) template.HTML {
-	if de.IsDir() {
-		return iconFolder
-	}
-	if ic, ok := iconByExt[strings.ToLower(filepath.Ext(de.Name()))]; ok {
-		return ic
-	}
-	return iconDoc
-}
 
 type entry struct {
 	Name string
