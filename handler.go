@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -11,9 +12,11 @@ import (
 )
 
 type entry struct {
-	Name string
-	URL  string
-	Icon template.HTML
+	Name     string
+	URL      string
+	Icon     template.HTML
+	Size     string
+	Modified string
 }
 
 type indexData struct {
@@ -86,11 +89,23 @@ func (s *server) listDir(w http.ResponseWriter, upath, full string) {
 			continue
 		}
 
+		info, err := de.Info()
+		if err != nil {
+			continue
+		}
+
 		link := url.URL{Path: de.Name()}
-		e := entry{Name: de.Name(), URL: link.String(), Icon: iconFor(de)}
+		e := entry{
+			Name:     de.Name(),
+			URL:      link.String(),
+			Icon:     iconFor(de),
+			Size:     humanSize(info.Size()),
+			Modified: info.ModTime().Format("2006-01-02 15:04"),
+		}
 		if de.IsDir() {
 			e.Name += "/"
 			e.URL += "/"
+			e.Size = "-"
 		}
 		entries = append(entries, e)
 	}
@@ -112,4 +127,19 @@ func (s *server) notFound(w http.ResponseWriter, upath string) {
 	}
 
 	w.Write(data)
+}
+
+func humanSize(n int64) string {
+	const unit = 1024
+	if n < unit {
+		return fmt.Sprintf("%d B", n)
+	}
+
+	div, exp := int64(unit), 0
+	for m := n / unit; m >= unit; m /= unit {
+		div *= unit
+		exp++
+	}
+
+	return fmt.Sprintf("%.1f %cB", float64(n)/float64(div), "KMGTPE"[exp])
 }

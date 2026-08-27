@@ -4,17 +4,36 @@
     <meta charset="utf-8">
     <title>Index of {{.Path}}</title>
     <style>
-        ul { list-style: none; padding-left: 0; }
-        li { display: flex; align-items: center; gap: .4em; }
+        table { border-collapse: collapse; }
+        th, td { text-align: left; padding: .25rem 1.5rem .25rem 0; white-space: nowrap; }
+        th { border-bottom: 1px solid; }
+        td:last-child, th:last-child { text-align: right; padding-right: 0; }
+        .name { display: flex; align-items: center; gap: .4em; }
         svg { flex: none; }
     </style>
 </head>
 <body>
     <h1>Index of {{.Path}}</h1>
-    <ul>
-        {{if ne .Path "/"}}<li>{{$.ParentIcon}} <a href="../">Parent directory</a></li>{{end}}
-        {{range .Entries}}<li>{{.Icon}} <a href="{{.URL}}">{{.Name}}</a></li>
-        {{end}}
-    </ul>
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Modified</th><th>Size</th></tr>
+        </thead>
+        <tbody>
+            {{if ne .Path "/"}}
+            <tr>
+                <td><span class="name">{{$.ParentIcon}} <a href="../">Parent directory</a></span></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {{end}}
+            {{range .Entries}}
+            <tr>
+                <td><span class="name">{{.Icon}} <a href="{{.URL}}">{{.Name}}</a></span></td>
+                <td>{{.Modified}}</td>
+                <td>{{.Size}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
 </body>
 </html>
